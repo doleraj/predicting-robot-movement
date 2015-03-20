@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Predicting Robot Movement</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Predicting Robot Movement">
+  <meta name="author" content="Art Doler">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Predicting Robot Movement</h1>
+    <h2>Following a Wall-Follower</h2>
+    <p>Art Doler<br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Wall-Following Robots</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>Wall-following robots use sonar-enabled sensors to navigate complex spaces by sticking close to one or more of the walls. The hardware platforms the robots are built on can often be expensive, and high-quality sensors are more expensive than that.</li>
+<li>Failure of a decision predictor could mean damaging the robot, at high cost!</li>
+<li>How can we test a predictor without damaging the robot?</li>
+<li>One way is to build an application which allows the predictor to be &quot;manually&quot; tested. Ideally many people could be testing at once, which suggests a web application.</li>
+<li>With Shiny, we can build a webapp around the predictor with little extra effort, and allow the predictor to be tested.</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="class" id="id" style="background:;">
+  <hgroup>
+    <h2>Building A Predictor</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Predictors for testing can be built using the <code>caret</code> library, training on whatever data the developer feels is necessary. For demonstration purposes we can get robot data from the <a href="http://archive.ics.uci.edu/ml/datasets/Wall-Following+Robot+Navigation+Data">UCI Machine Learning Repository</a>. With that data, we can build a data frame, and our training, and test sets.</p>
+
+<pre><code class="r">sensor_data &lt;- read.csv(&#39;sensor_readings_4.data&#39;, header=FALSE)
+names(sensor_data) &lt;- c(&#39;SD_front&#39;, &#39;SD_left&#39;, &#39;SD_right&#39;, &#39;SD_back&#39;, &#39;class&#39;)
+
+# Build training/test sets
+inTrain &lt;- createDataPartition(y = sensor_data$class, p=0.6, list=F)
+training &lt;- sensor_data[inTrain,]
+testing &lt;- sensor_data[-inTrain,]
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Initial Predictor</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>With that we can train the predictor and look at the OOB confusion matrix.</p>
+
+<pre><code class="r">model &lt;- randomForest(class ~ ., data = training)
+pred &lt;- predict(model, testing)
+confusionMatrix(pred, testing$class)$overall
+</code></pre>
+
+<pre><code>##       Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull 
+##      1.0000000      1.0000000      0.9983101      1.0000000      0.4044017 
+## AccuracyPValue  McnemarPValue 
+##      0.0000000            NaN
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>The Application</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>With the model in place, a Shiny application can be built around it that provides quick prediction feedback from many users without the risk of damaging a robot.</p>
+
+<p><img src="assets/img/app.png" alt=""></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Wall-Following Robots'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Building A Predictor'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Initial Predictor'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='The Application'>
+         4
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
